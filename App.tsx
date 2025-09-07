@@ -14,7 +14,7 @@ import { RenamePlayerForm } from './components/DeletePlayerForm';
 const INITIAL_PLAYERS: Player[] = [
   {
     id: 'p1',
-    name: 'Team Mom',
+    name: 'Shannon',
     score: 150,
     members: [
       { id: 'fm1', name: 'Cousin Sarah' },
@@ -23,7 +23,7 @@ const INITIAL_PLAYERS: Player[] = [
   },
   {
     id: 'p2',
-    name: 'Dad Dynasty',
+    name: 'Sam',
     score: -50,
     members: [
       { id: 'fm3', name: 'Aunt Carol' },
