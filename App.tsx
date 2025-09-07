@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Player, FamilyMember, LoggedEvent, EventDefinition, EventCategory } from './types';
 import { LIFE_EVENTS } from './constants';
 import { Header } from './components/Header';
@@ -9,6 +9,14 @@ import { Leaderboard } from './components/Leaderboard';
 import { EventFeed } from './components/EventFeed';
 import { AddEventForm } from './components/AddEventForm';
 import { RenamePlayerForm } from './components/DeletePlayerForm';
+import {
+  loadPlayers,
+  loadLoggedEvents,
+  loadLifeEvents,
+  savePlayers,
+  saveLoggedEvents,
+  saveLifeEvents,
+} from './storage';
 
 // Initial state for demonstration purposes
 const INITIAL_PLAYERS: Player[] = [
@@ -54,9 +62,21 @@ const INITIAL_EVENTS: LoggedEvent[] = [
 ]
 
 export default function App() {
-  const [players, setPlayers] = useState<Player[]>(INITIAL_PLAYERS);
-  const [loggedEvents, setLoggedEvents] = useState<LoggedEvent[]>(INITIAL_EVENTS);
-  const [lifeEvents, setLifeEvents] = useState<EventDefinition[]>(LIFE_EVENTS);
+  const [players, setPlayers] = useState<Player[]>(() => loadPlayers() ?? INITIAL_PLAYERS);
+  const [loggedEvents, setLoggedEvents] = useState<LoggedEvent[]>(() => loadLoggedEvents() ?? INITIAL_EVENTS);
+  const [lifeEvents, setLifeEvents] = useState<EventDefinition[]>(() => loadLifeEvents() ?? LIFE_EVENTS);
+
+  useEffect(() => {
+    savePlayers(players);
+  }, [players]);
+
+  useEffect(() => {
+    saveLoggedEvents(loggedEvents);
+  }, [loggedEvents]);
+
+  useEffect(() => {
+    saveLifeEvents(lifeEvents);
+  }, [lifeEvents]);
 
   const familyMembers = useMemo(() => {
     return players.flatMap(p => p.members.map(m => ({ ...m, playerName: p.name, playerId: p.id })));
