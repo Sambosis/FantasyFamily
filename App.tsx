@@ -19,42 +19,40 @@ const INITIAL_PLAYERS: Player[] = [
   {
     id: 'p1',
     name: 'Shannon',
-    score: 150,
+    score: 0,
     members: [
-      { id: 'fm1', name: 'Cousin Sarah' },
-      { id: 'fm2', name: 'Uncle Rob' },
+
     ],
   },
   {
     id: 'p2',
     name: 'Sam',
-    score: -50,
+    score: 0,
     members: [
-      { id: 'fm3', name: 'Aunt Carol' },
-      { id: 'fm4', name: 'Grandpa Joe' },
+
     ],
   },
 ];
 
 const INITIAL_EVENTS: LoggedEvent[] = [
-    {
-        id: crypto.randomUUID(),
-        memberName: 'Cousin Sarah',
-        playerName: 'Team Mom',
-        eventName: 'Gets Promotion',
-        points: 150,
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        category: 'positive',
-    },
-    {
-        id: crypto.randomUUID(),
-        memberName: 'Grandpa Joe',
-        playerName: 'Dad Dynasty',
-        eventName: 'Gets Fired',
-        points: -50,
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48),
-        category: 'negative',
-    }
+    // {
+    //     id: crypto.randomUUID(),
+    //     memberName: 'Cousin Sarah',
+    //     playerName: 'Team Mom',
+    //     eventName: 'Gets Promotion',
+    //     points: 150,
+    //     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
+    //     category: 'positive',
+    // },
+    // {
+    //     id: crypto.randomUUID(),
+    //     memberName: 'Grandpa Joe',
+    //     playerName: 'Dad Dynasty',
+    //     eventName: 'Gets Fired',
+    //     points: -50,
+    //     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48),
+    //     category: 'negative',
+    // }
 ]
 
 export default function App() {
@@ -159,36 +157,40 @@ export default function App() {
     const eventDefinition = lifeEvents.find(e => e.id === eventId);
     if (!eventDefinition) return;
 
-    setPlayers(currentPlayers => {
-        let playerForEvent: Player | undefined;
-        let memberForEvent: FamilyMember | undefined;
+    let playerForEvent: Player | undefined;
+    let memberForEvent: FamilyMember | undefined;
 
-        const newPlayers = currentPlayers.map(p => {
-            const member = p.members.find(m => m.id === memberId);
-            if (member) {
-                playerForEvent = p;
-                memberForEvent = member;
-                return { ...p, score: p.score + eventDefinition.points };
-            }
-            return p;
-        });
+    for (const player of players) {
+      const member = player.members.find(m => m.id === memberId);
+      if (member) {
+        playerForEvent = player;
+        memberForEvent = member;
+        break;
+      }
+    }
 
-        if (playerForEvent && memberForEvent) {
-            const newLog: LoggedEvent = {
-              id: crypto.randomUUID(),
-              memberName: memberForEvent.name,
-              playerName: playerForEvent.name,
-              eventName: eventDefinition.name,
-              points: eventDefinition.points,
-              timestamp: new Date(),
-              category: eventDefinition.category,
-            };
-            setLoggedEvents(currentEvents => [newLog, ...currentEvents]);
-            return newPlayers;
+    if (!playerForEvent || !memberForEvent) return;
+
+    const finalPlayerForEvent = playerForEvent;
+    setPlayers(currentPlayers =>
+      currentPlayers.map(p => {
+        if (p.id === finalPlayerForEvent.id) {
+          return { ...p, score: p.score + eventDefinition.points };
         }
-        
-        return currentPlayers;
-    });
+        return p;
+      })
+    );
+
+    const newLog: LoggedEvent = {
+      id: crypto.randomUUID(),
+      memberName: memberForEvent.name,
+      playerName: playerForEvent.name,
+      eventName: eventDefinition.name,
+      points: eventDefinition.points,
+      timestamp: new Date(),
+      category: eventDefinition.category,
+    };
+    setLoggedEvents(currentEvents => [newLog, ...currentEvents]);
   };
   
   const sortedPlayers = useMemo(() => {
