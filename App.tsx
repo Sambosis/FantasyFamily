@@ -9,6 +9,10 @@ import { Leaderboard } from './components/Leaderboard';
 import { EventFeed } from './components/EventFeed';
 import { AddEventForm } from './components/AddEventForm';
 import { RenamePlayerForm } from './components/DeletePlayerForm';
+import { DataManager } from './components/DataManager';
+import { SaveStatus } from './components/SaveStatus';
+import { usePersistentState } from './hooks/usePersistentState';
+import { loadPlayers, savePlayers, loadLoggedEvents, saveLoggedEvents, loadLifeEvents, saveLifeEvents } from './utils/storage';
 
 // Initial state for demonstration purposes
 const INITIAL_PLAYERS: Player[] = [
@@ -54,9 +58,27 @@ const INITIAL_EVENTS: LoggedEvent[] = [
 ]
 
 export default function App() {
-  const [players, setPlayers] = useState<Player[]>(INITIAL_PLAYERS);
-  const [loggedEvents, setLoggedEvents] = useState<LoggedEvent[]>(INITIAL_EVENTS);
-  const [lifeEvents, setLifeEvents] = useState<EventDefinition[]>(LIFE_EVENTS);
+  // Use persistent state that automatically saves to localStorage
+  const [players, setPlayers] = usePersistentState(
+    'players',
+    INITIAL_PLAYERS,
+    savePlayers,
+    loadPlayers
+  );
+  
+  const [loggedEvents, setLoggedEvents] = usePersistentState(
+    'loggedEvents',
+    INITIAL_EVENTS,
+    saveLoggedEvents,
+    loadLoggedEvents
+  );
+  
+  const [lifeEvents, setLifeEvents] = usePersistentState(
+    'lifeEvents',
+    LIFE_EVENTS,
+    saveLifeEvents,
+    loadLifeEvents
+  );
 
   const familyMembers = useMemo(() => {
     return players.flatMap(p => p.members.map(m => ({ ...m, playerName: p.name, playerId: p.id })));
@@ -166,6 +188,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-gray-200 font-sans p-4 sm:p-6 lg:p-8">
+      <SaveStatus />
       <div className="max-w-7xl mx-auto">
         <Header />
 
@@ -189,6 +212,14 @@ export default function App() {
                     <AddEventForm onAddEvent={addEvent} />
                 </div>
             </div>
+
+            {/* Data Management */}
+            <DataManager 
+              onDataImported={() => {
+                // Force reload to pick up imported data
+                window.location.reload();
+              }} 
+            />
           </div>
         </main>
       </div>
