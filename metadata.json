@@ -1,0 +1,5 @@
+{
+  "name": "Fantasy Family",
+  "description": "A fantasy sports-style game where you draft your real family members and score points based on their life events. The commissioner logs events like marriages, new babies, or getting fired to award points and determine the ultimate family champion.",
+  "requestFramePermissions": []
+}
