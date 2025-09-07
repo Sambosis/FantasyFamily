@@ -1,66 +1,79 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Player } from '../types';
 
-interface RenamePlayerFormProps {
+interface DeletePlayerFormProps {
   players: Player[];
-  onRenamePlayer: (playerId: string, newName: string) => void;
+  onDeletePlayer: (playerId: string) => void;
 }
 
-export const RenamePlayerForm: React.FC<RenamePlayerFormProps> = ({ players, onRenamePlayer }) => {
+export const DeletePlayerForm: React.FC<DeletePlayerFormProps> = ({ players, onDeletePlayer }) => {
   const [selectedPlayerId, setSelectedPlayerId] = useState('');
-  const [newName, setNewName] = useState('');
+  const [confirmationName, setConfirmationName] = useState('');
 
-  useEffect(() => {
-    const selectedPlayer = players.find(p => p.id === selectedPlayerId);
-    if (selectedPlayer) {
-      setNewName(selectedPlayer.name);
-    } else {
-      setNewName('');
-    }
-  }, [selectedPlayerId, players]);
+  const selectedPlayer = players.find(p => p.id === selectedPlayerId);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedPlayerId || !newName.trim()) return;
-    onRenamePlayer(selectedPlayerId, newName);
+    if (!selectedPlayerId || !selectedPlayer) return;
+    
+    // Require exact name match for confirmation
+    if (confirmationName.trim() !== selectedPlayer.name) {
+      alert('Player name does not match. Please type the exact player name to confirm deletion.');
+      return;
+    }
+    
+    onDeletePlayer(selectedPlayerId);
     setSelectedPlayerId('');
-    setNewName('');
+    setConfirmationName('');
   };
+
+  const isDeleteDisabled = !selectedPlayerId || !selectedPlayer || confirmationName.trim() !== selectedPlayer.name;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <label htmlFor="renamePlayerSelect" className="block text-sm font-medium text-slate-300">
-        4. Rename Player
+      <label htmlFor="deletePlayerSelect" className="block text-sm font-medium text-red-400">
+        5. Delete Player
       </label>
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="space-y-2">
         <select
-          id="renamePlayerSelect"
+          id="deletePlayerSelect"
           value={selectedPlayerId}
-          onChange={(e) => setSelectedPlayerId(e.target.value)}
-          className="flex-grow bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition"
+          onChange={(e) => {
+            setSelectedPlayerId(e.target.value);
+            setConfirmationName(''); // Reset confirmation when player changes
+          }}
+          className="w-full bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-red-500 focus:outline-none transition"
         >
-          <option value="">Select a Player...</option>
+          <option value="">Select a Player to Delete...</option>
           {players.map((player) => (
             <option key={player.id} value={player.id}>
-              {player.name}
+              {player.name} (Score: {player.score}, Members: {player.members.length})
             </option>
           ))}
         </select>
-        <input
-          type="text"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          placeholder="Enter new name"
-          className="flex-grow bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition"
-          disabled={!selectedPlayerId}
-        />
+        
+        {selectedPlayer && (
+          <div className="bg-red-900/20 border border-red-700 rounded-md p-3">
+            <p className="text-red-400 text-sm mb-2">
+              ⚠️ This will permanently delete <strong>{selectedPlayer.name}</strong> and all their {selectedPlayer.members.length} family member(s).
+            </p>
+            <input
+              type="text"
+              value={confirmationName}
+              onChange={(e) => setConfirmationName(e.target.value)}
+              placeholder={`Type "${selectedPlayer.name}" to confirm`}
+              className="w-full bg-slate-700 border border-red-600 text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-red-500 focus:outline-none transition"
+            />
+          </div>
+        )}
       </div>
+      
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
-        disabled={!selectedPlayerId || !newName.trim()}
+        className="w-full bg-red-600 text-white font-bold py-2 px-4 rounded-md hover:bg-red-700 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
+        disabled={isDeleteDisabled}
       >
-        Rename Player
+        {selectedPlayer ? `Delete ${selectedPlayer.name}` : 'Delete Player'}
       </button>
     </form>
   );
