@@ -8,7 +8,8 @@ import { LogEventForm } from './components/LogEventForm';
 import { Leaderboard } from './components/Leaderboard';
 import { EventFeed } from './components/EventFeed';
 import { AddEventForm } from './components/AddEventForm';
-import { RenamePlayerForm } from './components/DeletePlayerForm';
+import { DeletePlayerForm } from './components/DeletePlayerForm';
+import { RenamePlayerForm } from './components/RenamePlayerForm';
 import {
   loadPlayers,
   loadLoggedEvents,
@@ -179,6 +180,14 @@ export default function App() {
     });
   };
   
+  const deletePlayer = (playerId: string) => {
+    if (!playerId) return;
+    const playerToDelete = players.find(p => p.id === playerId);
+    if (!playerToDelete) return;
+    setPlayers(currentPlayers => currentPlayers.filter(p => p.id !== playerId));
+    setLoggedEvents(currentEvents => currentEvents.filter(e => e.playerName !== playerToDelete.name));
+  };
+  
   const sortedPlayers = useMemo(() => {
     return [...players].sort((a, b) => b.score - a.score);
   }, [players]);
@@ -204,6 +213,7 @@ export default function App() {
                     <AddPlayerForm onAddPlayer={addPlayer} />
                     <AddMemberForm players={players} onAddMember={addMember} />
                     <LogEventForm players={players} lifeEvents={lifeEvents} onLogEvent={logEvent} />
+                    <DeletePlayerForm players={players} onDeletePlayer={deletePlayer} />
                     <RenamePlayerForm players={players} onRenamePlayer={renamePlayer} />
                     <hr className="border-slate-700" />
                     <AddEventForm onAddEvent={addEvent} />
