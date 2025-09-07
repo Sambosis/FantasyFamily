@@ -2,14 +2,9 @@ import { useState, useMemo, useEffect } from 'react';
 import { Player, FamilyMember, LoggedEvent, EventDefinition, EventCategory } from './types';
 import { LIFE_EVENTS } from './constants';
 import { Header } from './components/Header';
-import { AddPlayerForm } from './components/AddPlayerForm';
-import { AddMemberForm } from './components/AddMemberForm';
-import { LogEventForm } from './components/LogEventForm';
 import { Leaderboard } from './components/Leaderboard';
 import { EventFeed } from './components/EventFeed';
-import { AddEventForm } from './components/AddEventForm';
-import { RenamePlayerForm } from './components/RenamePlayerForm';
-import { DeletePlayerForm } from './components/DeletePlayerForm';
+import { CommissionerView } from './components/CommissionerView';
 import {
   loadPlayers,
   loadLoggedEvents,
@@ -66,6 +61,7 @@ export default function App() {
   const [players, setPlayers] = useState<Player[]>(() => loadPlayers() ?? INITIAL_PLAYERS);
   const [loggedEvents, setLoggedEvents] = useState<LoggedEvent[]>(() => loadLoggedEvents() ?? INITIAL_EVENTS);
   const [lifeEvents, setLifeEvents] = useState<EventDefinition[]>(() => loadLifeEvents() ?? LIFE_EVENTS);
+  const [isCommissionerView, setIsCommissionerView] = useState(false);
 
   useEffect(() => {
     savePlayers(players);
@@ -199,11 +195,37 @@ export default function App() {
     return [...players].sort((a, b) => b.score - a.score);
   }, [players]);
 
+  const toggleView = () => {
+    setIsCommissionerView(!isCommissionerView);
+  };
+
+
+  if (isCommissionerView) {
+    return (
+      <div>
+        <div className="min-h-screen bg-slate-900 text-gray-200 font-sans p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto">
+            <Header isCommissionerView={isCommissionerView} onToggleView={toggleView} />
+          </div>
+        </div>
+        <CommissionerView
+          players={players}
+          lifeEvents={lifeEvents}
+          onAddPlayer={addPlayer}
+          onAddMember={addMember}
+          onLogEvent={logEvent}
+          onRenamePlayer={renamePlayer}
+          onDeletePlayer={deletePlayer}
+          onAddEvent={addEvent}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-900 text-gray-200 font-sans p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <Header />
+        <Header isCommissionerView={isCommissionerView} onToggleView={toggleView} />
 
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
           {/* Main Column: Leaderboard */}
@@ -212,19 +234,19 @@ export default function App() {
             <EventFeed events={loggedEvents} />
           </div>
 
-          {/* Right Column: Actions */}
+          {/* Right Column: Quick Actions */}
           <div className="space-y-8 animate-fade-in">
             <div className="bg-slate-800 p-6 rounded-xl shadow-lg">
-                <h2 className="text-2xl font-bold text-cyan-400 mb-4">Commissioner's Desk</h2>
-                <div className="space-y-6">
-                    <AddPlayerForm onAddPlayer={addPlayer} />
-                    <AddMemberForm players={players} onAddMember={addMember} />
-                    <LogEventForm players={players} lifeEvents={lifeEvents} onLogEvent={logEvent} />
-                    <RenamePlayerForm players={players} onRenamePlayer={renamePlayer} />
-                    <DeletePlayerForm players={players} onDeletePlayer={deletePlayer} />
-                    <hr className="border-slate-700" />
-                    <AddEventForm onAddEvent={addEvent} />
-                </div>
+                <h2 className="text-2xl font-bold text-cyan-400 mb-4">Quick Actions</h2>
+                <p className="text-slate-400 mb-4">
+                  Switch to Commissioner view for full management tools.
+                </p>
+                <button
+                  onClick={toggleView}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:from-cyan-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+                >
+                  ⚙️ Open Commissioner's Desk
+                </button>
             </div>
           </div>
         </main>
