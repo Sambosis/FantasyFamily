@@ -7,14 +7,7 @@ import { EventFeed } from './components/EventFeed';
 import { CommissionerDesk } from './components/CommissionerDesk';
 import { FamilyMemberStats } from './components/FamilyMemberStats';
 import { FamilyMembersView } from './components/FamilyMembersView';
-import {
-  loadPlayers,
-  loadLoggedEvents,
-  loadLifeEvents,
-  savePlayers,
-  saveLoggedEvents,
-  saveLifeEvents,
-} from './storage';
+import { loadState, saveState } from './storage';
 
 // Initial state for demonstration purposes
 const INITIAL_PLAYERS: Player[] = [
@@ -58,24 +51,30 @@ const INITIAL_EVENTS: LoggedEvent[] = [
 ]
 
 export default function App() {
-  const [players, setPlayers] = useState<Player[]>(() => loadPlayers() ?? INITIAL_PLAYERS);
-  const [loggedEvents, setLoggedEvents] = useState<LoggedEvent[]>(() => loadLoggedEvents() ?? INITIAL_EVENTS);
-  const [lifeEvents, setLifeEvents] = useState<EventDefinition[]>(() => loadLifeEvents() ?? LIFE_EVENTS);
+  const [players, setPlayers] = useState<Player[]>(INITIAL_PLAYERS);
+  const [loggedEvents, setLoggedEvents] = useState<LoggedEvent[]>(INITIAL_EVENTS);
+  const [lifeEvents, setLifeEvents] = useState<EventDefinition[]>(LIFE_EVENTS);
   const [isCommissionerView, setIsCommissionerView] = useState<boolean>(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'members'>('dashboard');
+  const [hasHydrated, setHasHydrated] = useState<boolean>(false);
 
   useEffect(() => {
-    savePlayers(players);
-  }, [players]);
+    (async () => {
+      const remote = await loadState();
+      if (remote) {
+        setPlayers(remote.players);
+        setLoggedEvents(remote.events);
+        setLifeEvents(remote.lifeEvents);
+      }
+      setHasHydrated(true);
+    })();
+  }, []);
 
   useEffect(() => {
-    saveLoggedEvents(loggedEvents);
-  }, [loggedEvents]);
-
-  useEffect(() => {
-    saveLifeEvents(lifeEvents);
-  }, [lifeEvents]);
+    if (!hasHydrated) return;
+    void saveState(players, loggedEvents, lifeEvents);
+  }, [players, loggedEvents, lifeEvents, hasHydrated]);
 
   const familyMembers = useMemo(() => {
     return players.flatMap(p => p.members.map(m => ({ ...m, playerName: p.name, playerId: p.id })));
