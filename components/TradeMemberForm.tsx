@@ -35,49 +35,71 @@ export const TradeMemberForm: React.FC<TradeMemberFormProps> = ({ players, onTra
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <label htmlFor="tradeMemberSelect" className="block text-sm font-medium text-slate-300">
-        4. Trade Family Member
-      </label>
-      <div className="flex flex-col gap-2">
-        <select
-          id="tradeMemberSelect"
-          value={selectedMemberId}
-          onChange={(e) => {
-            setSelectedMemberId(e.target.value);
-            setSelectedTargetPlayerId('');
-          }}
-          className="w-full bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition"
-        >
-          <option value="">Select Family Member...</option>
-          {allMembers.map((member) => (
-            <option key={member.id} value={member.id}>
-              {member.name} (Owned by {member.ownerPlayerName})
-            </option>
-          ))}
-        </select>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex items-center space-x-2 mb-4">
+        <span className="text-xl">🔄</span>
+        <label htmlFor="tradeMemberSelect" className="text-lg font-semibold text-indigo-300">
+          Trade Family Member
+        </label>
+      </div>
+      <div className="space-y-3">
+        <div className="relative">
+          <select
+            id="tradeMemberSelect"
+            value={selectedMemberId}
+            onChange={(e) => {
+              setSelectedMemberId(e.target.value);
+              setSelectedTargetPlayerId('');
+            }}
+            className="w-full bg-slate-900/50 border-2 border-slate-600 text-white rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-indigo-400 focus:border-transparent focus:outline-none transition-all duration-200 appearance-none cursor-pointer"
+          >
+            <option value="">Select Family Member to Trade...</option>
+            {allMembers.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.name} (Currently with {member.ownerPlayerName})
+              </option>
+            ))}
+          </select>
+          <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+            <span className="text-slate-400">▼</span>
+          </div>
+        </div>
 
-        <select
-          id="tradeTargetPlayerSelect"
-          value={selectedTargetPlayerId}
-          onChange={(e) => setSelectedTargetPlayerId(e.target.value)}
-          className="w-full bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition"
-          disabled={!selectedMemberId}
-        >
-          <option value="">Select Destination Player...</option>
-          {eligibleTargetPlayers.map((player) => (
-            <option key={player.id} value={player.id}>
-              {player.name}
-            </option>
-          ))}
-        </select>
+        {selectedMemberId && (
+          <div className="flex items-center justify-center">
+            <span className="text-2xl text-slate-500">↓</span>
+          </div>
+        )}
+
+        <div className="relative">
+          <select
+            id="tradeTargetPlayerSelect"
+            value={selectedTargetPlayerId}
+            onChange={(e) => setSelectedTargetPlayerId(e.target.value)}
+            className="w-full bg-slate-900/50 border-2 border-slate-600 text-white rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-indigo-400 focus:border-transparent focus:outline-none transition-all duration-200 appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!selectedMemberId}
+          >
+            <option value="">Select Destination Player...</option>
+            {eligibleTargetPlayers.map((player) => (
+              <option key={player.id} value={player.id}>
+                Trade to {player.name}
+              </option>
+            ))}
+          </select>
+          <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+            <span className="text-slate-400">▼</span>
+          </div>
+        </div>
       </div>
       <button
         type="submit"
-        className="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
+        className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold py-3 px-4 rounded-lg hover:from-indigo-600 hover:to-purple-600 transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
         disabled={!selectedMemberId || !selectedTargetPlayerId}
       >
-        Trade Member
+        <span className="flex items-center justify-center space-x-2">
+          <span>🤝</span>
+          <span>Execute Trade</span>
+        </span>
       </button>
     </form>
   );
