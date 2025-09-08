@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { Leaderboard } from './components/Leaderboard';
 import { EventFeed } from './components/EventFeed';
 import { CommissionerDesk } from './components/CommissionerDesk';
+import { MembersOverview } from './components/MembersOverview';
 import {
   loadPlayers,
   loadLoggedEvents,
@@ -318,8 +319,13 @@ export default function App() {
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <Leaderboard players={sortedPlayers} />
+              <Leaderboard players={sortedPlayers} events={loggedEvents} />
               <EventFeed events={loggedEvents} />
+            </div>
+
+            {/* Members Overview Section */}
+            <div className="mt-8">
+              <MembersOverview players={players} events={loggedEvents} />
             </div>
           </main>
         )}
