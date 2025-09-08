@@ -263,9 +263,62 @@ export default function App() {
             />
           </main>
         ) : (
-          <main className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-            <Leaderboard players={sortedPlayers} />
-            <EventFeed events={loggedEvents} />
+          <main className="mt-8 space-y-8 animate-fade-in">
+            {/* Main View Header */}
+            <div className="text-center">
+              <h2 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500 mb-2">
+                Main View
+              </h2>
+              <p className="text-slate-400">Track standings and recent life events</p>
+            </div>
+
+            {/* Container matching Commissioner Desk */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl shadow-2xl border border-slate-700">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Leaderboard players={sortedPlayers} />
+                <EventFeed events={loggedEvents} />
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Total Players</p>
+                    <p className="text-2xl font-bold text-cyan-400">{players.length}</p>
+                  </div>
+                  <span className="text-3xl opacity-50">👤</span>
+                </div>
+              </div>
+              <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Total Members</p>
+                    <p className="text-2xl font-bold text-purple-400">{players.reduce((acc, p) => acc + p.members.length, 0)}</p>
+                  </div>
+                  <span className="text-3xl opacity-50">👥</span>
+                </div>
+              </div>
+              <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Event Types</p>
+                    <p className="text-2xl font-bold text-green-400">{lifeEvents.length}</p>
+                  </div>
+                  <span className="text-3xl opacity-50">📋</span>
+                </div>
+              </div>
+              <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Leading Score</p>
+                    <p className="text-2xl font-bold text-orange-400">{Math.max(...players.map(p => p.score), 0)}</p>
+                  </div>
+                  <span className="text-3xl opacity-50">🏆</span>
+                </div>
+              </div>
+            </div>
           </main>
         )}
       </div>
