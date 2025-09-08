@@ -32,19 +32,39 @@ export const CommissionerDesk: React.FC<CommissionerDeskProps> = ({
   onAddEvent,
 }) => {
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-fade-in">
-      <div className="bg-slate-800 p-6 rounded-xl shadow-lg">
-        <h2 className="text-2xl font-bold text-cyan-400 mb-4">Commissioner's Desk</h2>
-        <div className="space-y-6">
-          <AddPlayerForm onAddPlayer={onAddPlayer} />
-          <AddMemberForm players={players} onAddMember={onAddMember} />
-          <TradeMemberForm players={players} onTradeMember={onTradeMember} />
-          <LogEventForm players={players} lifeEvents={lifeEvents} onLogEvent={onLogEvent} />
-          <RenamePlayerForm players={players} onRenamePlayer={onRenamePlayer} />
-          <DeletePlayerForm players={players} onDeletePlayer={onDeletePlayer} />
-          <hr className="border-slate-700" />
-          <AddEventForm onAddEvent={onAddEvent} />
-        </div>
+    <div className="space-y-8 animate-fade-in">
+      <div className="bg-slate-800/50 p-6 rounded-xl shadow-lg">
+        <h2 className="text-3xl font-bold tracking-tight mb-2">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">Commissioner's Desk</span>
+        </h2>
+        <p className="text-slate-400">Manage players, rosters, and events from one place.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <section className="bg-slate-800/50 p-6 rounded-xl shadow-lg">
+          <h3 className="text-xl font-semibold text-cyan-300 mb-4">Player Management</h3>
+          <div className="space-y-6">
+            <AddPlayerForm onAddPlayer={onAddPlayer} />
+            <RenamePlayerForm players={players} onRenamePlayer={onRenamePlayer} />
+            <DeletePlayerForm players={players} onDeletePlayer={onDeletePlayer} />
+          </div>
+        </section>
+
+        <section className="bg-slate-800/50 p-6 rounded-xl shadow-lg">
+          <h3 className="text-xl font-semibold text-purple-300 mb-4">Roster Management</h3>
+          <div className="space-y-6">
+            <AddMemberForm players={players} onAddMember={onAddMember} />
+            <TradeMemberForm players={players} onTradeMember={onTradeMember} />
+          </div>
+        </section>
+
+        <section className="bg-slate-800/50 p-6 rounded-xl shadow-lg">
+          <h3 className="text-xl font-semibold text-yellow-300 mb-4">Event Management</h3>
+          <div className="space-y-6">
+            <LogEventForm players={players} lifeEvents={lifeEvents} onLogEvent={onLogEvent} />
+            <AddEventForm onAddEvent={onAddEvent} />
+          </div>
+        </section>
       </div>
     </div>
   );
