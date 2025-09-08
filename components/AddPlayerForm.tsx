@@ -15,25 +15,33 @@ export const AddPlayerForm: React.FC<AddPlayerFormProps> = ({ onAddPlayer }) => 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <label htmlFor="playerName" className="block text-sm font-medium text-slate-300">
-        1. Add New Player
-      </label>
-      <div className="flex gap-2">
-        <input
-          id="playerName"
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="e.g., Team Mom"
-          className="flex-grow bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition"
-        />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex items-center space-x-2 mb-4">
+        <span className="text-xl">➕</span>
+        <label htmlFor="playerName" className="text-lg font-semibold text-cyan-300">
+          Add New Player
+        </label>
+      </div>
+      <div className="flex gap-3">
+        <div className="relative flex-grow">
+          <input
+            id="playerName"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter player name..."
+            className="w-full bg-slate-900/50 border-2 border-slate-600 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-cyan-400 focus:border-transparent focus:outline-none transition-all duration-200 placeholder-slate-500"
+          />
+          <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+            <span className="text-slate-500">👤</span>
+          </div>
+        </div>
         <button
           type="submit"
-          className="bg-cyan-500 text-white font-bold py-2 px-4 rounded-md hover:bg-cyan-600 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
+          className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-3 px-6 rounded-lg hover:from-cyan-600 hover:to-blue-600 transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
           disabled={!name.trim()}
         >
-          Add
+          Add Player
         </button>
       </div>
     </form>
