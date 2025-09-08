@@ -1,0 +1,19 @@
+{
+  "name": "Fantasy Family",
+  "description": "A React application for managing fantasy family leagues",
+  "repository": "https://github.com/your-username/fantasy-family",
+  "logo": "",
+  "keywords": ["react", "vite", "fantasy", "family", "league"],
+  "success_url": "/",
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "env": {
+    "GEMINI_API_KEY": {
+      "description": "API key for Gemini services",
+      "required": false
+    }
+  }
+}
