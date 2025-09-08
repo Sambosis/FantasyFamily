@@ -6,51 +6,81 @@ interface PlayerCardProps {
   rank: number;
 }
 
-const TrophyIcon: React.FC<{ rank: number }> = ({ rank }) => {
-    const colors: { [key: number]: string } = {
-        1: 'text-yellow-400',
-        2: 'text-gray-400',
-        3: 'text-yellow-600'
-    };
-    const rankColor = colors[rank] || 'text-slate-500';
-
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`w-8 h-8 ${rankColor}`}>
-            <path fillRule="evenodd" d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V2.75A.75.75 0 0110 2zM5.03 3.895a.75.75 0 01.94-1.158l.992.496a.75.75 0 11-.53 1.342l-.992-.496a.75.75 0 01-.41-.784zM13.97 3.895a.75.75 0 01-1.06 1.06l-.992-.496a.75.75 0 11.53-1.342l.992.496a.75.75 0 01.53.784zM5 9.5A5 5 0 0115 9.5v3.118a2.5 2.5 0 01-1.097 2.083l-2.093 1.4A2.5 2.5 0 0010 17.5V18a1 1 0 11-2 0v-.5a2.5 2.5 0 00-1.81-2.4l-2.093-1.4A2.5 2.5 0 015 12.618V9.5zM6.5 9.5a3.5 3.5 0 117 0v3.118a1 1 0 01-.439.833L11 14.53v-2.28a.75.75 0 00-1.5 0v2.28L7.44 13.45a1 1 0 01-.439-.833V9.5z" clipRule="evenodd" />
-        </svg>
-    );
+const getRankDisplay = (rank: number) => {
+    switch(rank) {
+        case 1: return { icon: '🥇', color: 'from-yellow-400 to-yellow-600', textColor: 'text-yellow-400' };
+        case 2: return { icon: '🥈', color: 'from-gray-300 to-gray-500', textColor: 'text-gray-300' };
+        case 3: return { icon: '🥉', color: 'from-orange-400 to-orange-600', textColor: 'text-orange-400' };
+        default: return { icon: `#${rank}`, color: 'from-slate-600 to-slate-700', textColor: 'text-slate-400' };
+    }
 };
 
 export const PlayerCard: React.FC<PlayerCardProps> = ({ player, rank }) => {
     const scoreColor = player.score > 0 ? 'text-green-400' : player.score < 0 ? 'text-red-400' : 'text-slate-400';
+    const rankDisplay = getRankDisplay(rank);
+    const isTopThree = rank <= 3;
     
     return (
-        <div className="bg-slate-800 rounded-xl shadow-lg p-6 transform transition-transform duration-300 hover:scale-[1.02] animate-slide-in-up">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <TrophyIcon rank={rank} />
-                    <div>
-                        <p className="text-sm text-slate-400">Rank #{rank}</p>
-                        <h3 className="text-2xl font-bold text-white">{player.name}</h3>
+        <div className={`relative rounded-xl shadow-lg transform transition-all duration-300 hover:scale-[1.02] animate-slide-in-up ${
+            isTopThree 
+                ? 'bg-gradient-to-br ' + rankDisplay.color + ' p-[1px]' 
+                : 'bg-slate-700'
+        }`}>
+            <div className={`bg-slate-800 rounded-xl p-5 ${isTopThree ? 'bg-opacity-95' : ''}`}>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className={`flex items-center justify-center ${
+                            isTopThree 
+                                ? 'text-4xl' 
+                                : 'w-10 h-10 bg-slate-700 rounded-lg text-sm font-bold text-slate-400'
+                        }`}>
+                            {rankDisplay.icon}
+                        </div>
+                        <div>
+                            <p className={`text-xs font-medium ${rankDisplay.textColor}`}>
+                                {rank === 1 ? 'Champion' : rank === 2 ? 'Runner-up' : rank === 3 ? 'Third Place' : `Rank #${rank}`}
+                            </p>
+                            <h3 className="text-xl font-bold text-white">{player.name}</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs text-slate-500">
+                                    {player.members.length} {player.members.length === 1 ? 'member' : 'members'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <div className={`text-3xl font-bold ${scoreColor} bg-slate-900/50 px-4 py-2 rounded-lg`}>
+                            {player.score > 0 ? '+' : ''}{player.score}
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">Points</p>
                     </div>
                 </div>
-                <div className="text-right">
-                    <p className={`text-4xl font-bold ${scoreColor}`}>{player.score}</p>
-                    <p className="text-sm text-slate-500">Points</p>
-                </div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-slate-700">
-                <h4 className="text-sm font-semibold text-slate-400 mb-2">Drafted Members</h4>
-                {player.members.length > 0 ? (
-                    <ul className="space-y-1">
-                        {player.members.map(member => (
-                            <li key={member.id} className="text-slate-300 bg-slate-700/50 rounded px-3 py-1 text-sm">
-                                {member.name}
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-slate-500 text-sm italic">No members drafted yet.</p>
+                
+                {player.members.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-slate-700/50">
+                        <div className="flex flex-wrap gap-2">
+                            {player.members.slice(0, 3).map(member => (
+                                <span 
+                                    key={member.id} 
+                                    className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-700/50 text-slate-300 border border-slate-600/30"
+                                >
+                                    <span className="mr-1">👤</span>
+                                    {member.name}
+                                </span>
+                            ))}
+                            {player.members.length > 3 && (
+                                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-700/30 text-slate-400 border border-slate-600/20">
+                                    +{player.members.length - 3} more
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                )}
+                
+                {player.members.length === 0 && (
+                    <div className="mt-4 pt-4 border-t border-slate-700/50">
+                        <p className="text-slate-500 text-xs italic text-center">No members drafted yet</p>
+                    </div>
                 )}
             </div>
         </div>

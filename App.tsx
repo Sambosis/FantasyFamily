@@ -263,9 +263,64 @@ export default function App() {
             />
           </main>
         ) : (
-          <main className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-            <Leaderboard players={sortedPlayers} />
-            <EventFeed events={loggedEvents} />
+          <main className="mt-8 space-y-8 animate-fade-in">
+            {/* Main View Header */}
+            <div className="text-center">
+              <h2 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500 mb-2">
+                League Dashboard
+              </h2>
+              <p className="text-slate-400">Track your family's achievements and see who's winning</p>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 p-4 rounded-xl border border-cyan-500/30 backdrop-blur-xs">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-cyan-300 text-sm font-medium">Leading Player</p>
+                    <p className="text-2xl font-bold text-white">
+                      {sortedPlayers[0]?.name || 'None'}
+                    </p>
+                  </div>
+                  <span className="text-3xl opacity-70">🏆</span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 p-4 rounded-xl border border-purple-500/30 backdrop-blur-xs">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-300 text-sm font-medium">Total Players</p>
+                    <p className="text-2xl font-bold text-white">{players.length}</p>
+                  </div>
+                  <span className="text-3xl opacity-70">👥</span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-4 rounded-xl border border-green-500/30 backdrop-blur-xs">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-300 text-sm font-medium">Total Events</p>
+                    <p className="text-2xl font-bold text-white">{loggedEvents.length}</p>
+                  </div>
+                  <span className="text-3xl opacity-70">📊</span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/20 p-4 rounded-xl border border-orange-500/30 backdrop-blur-xs">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-orange-300 text-sm font-medium">Family Members</p>
+                    <p className="text-2xl font-bold text-white">
+                      {players.reduce((acc, p) => acc + p.members.length, 0)}
+                    </p>
+                  </div>
+                  <span className="text-3xl opacity-70">👨‍👩‍👧‍👦</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <Leaderboard players={sortedPlayers} />
+              <EventFeed events={loggedEvents} />
+            </div>
           </main>
         )}
       </div>
