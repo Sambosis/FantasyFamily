@@ -4,9 +4,10 @@ import { PlayerCard } from './PlayerCard';
 
 interface LeaderboardProps {
     players: Player[];
+    onMemberClick?: (memberName: string, playerName?: string) => void;
 }
 
-export const Leaderboard: React.FC<LeaderboardProps> = ({ players }) => {
+export const Leaderboard: React.FC<LeaderboardProps> = ({ players, onMemberClick }) => {
     return (
         <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in">
             <div className="flex items-center space-x-3 mb-6">
@@ -23,6 +24,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ players }) => {
                             key={player.id}
                             player={player}
                             rank={index + 1}
+                            onMemberClick={onMemberClick}
                         />
                     ))}
                 </div>

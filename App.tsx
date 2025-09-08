@@ -4,6 +4,7 @@ import { LIFE_EVENTS } from './constants';
 import { Header } from './components/Header';
 import { Leaderboard } from './components/Leaderboard';
 import { EventFeed } from './components/EventFeed';
+import { MemberStatsModal } from './components/MemberStatsModal';
 import { CommissionerDesk } from './components/CommissionerDesk';
 import {
   loadPlayers,
@@ -60,6 +61,7 @@ export default function App() {
   const [loggedEvents, setLoggedEvents] = useState<LoggedEvent[]>(() => loadLoggedEvents() ?? INITIAL_EVENTS);
   const [lifeEvents, setLifeEvents] = useState<EventDefinition[]>(() => loadLifeEvents() ?? LIFE_EVENTS);
   const [isCommissionerView, setIsCommissionerView] = useState<boolean>(false);
+  const [selectedMemberName, setSelectedMemberName] = useState<string | null>(null);
 
   useEffect(() => {
     savePlayers(players);
@@ -76,6 +78,14 @@ export default function App() {
   const familyMembers = useMemo(() => {
     return players.flatMap(p => p.members.map(m => ({ ...m, playerName: p.name, playerId: p.id })));
   }, [players]);
+  const openMemberStats = (memberName: string) => {
+    setSelectedMemberName(memberName);
+  };
+
+  const closeMemberStats = () => {
+    setSelectedMemberName(null);
+  };
+
 
   const addPlayer = (name: string) => {
     if (name.trim() === '') return;
@@ -318,12 +328,18 @@ export default function App() {
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <Leaderboard players={sortedPlayers} />
-              <EventFeed events={loggedEvents} />
+              <Leaderboard players={sortedPlayers} onMemberClick={openMemberStats} />
+              <EventFeed events={loggedEvents} onMemberClick={openMemberStats} />
             </div>
           </main>
         )}
       </div>
+      <MemberStatsModal
+        isOpen={!!selectedMemberName}
+        memberName={selectedMemberName}
+        events={loggedEvents}
+        onClose={closeMemberStats}
+      />
     </div>
   );
 }

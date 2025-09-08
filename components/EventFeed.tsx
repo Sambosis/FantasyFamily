@@ -19,9 +19,10 @@ const timeSince = (date: Date): string => {
 
 interface EventFeedProps {
     events: LoggedEvent[];
+    onMemberClick?: (memberName: string, playerName?: string) => void;
 }
 
-export const EventFeed: React.FC<EventFeedProps> = ({ events }) => {
+export const EventFeed: React.FC<EventFeedProps> = ({ events, onMemberClick }) => {
 
     const categoryStyles = {
         positive: {
@@ -72,7 +73,13 @@ export const EventFeed: React.FC<EventFeedProps> = ({ events }) => {
                                         </div>
                                         <div className="flex-1">
                                             <p className="font-semibold text-white">
-                                                {event.memberName}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onMemberClick && onMemberClick(event.memberName, event.playerName)}
+                                                    className="hover:underline hover:text-cyan-300 transition"
+                                                >
+                                                    {event.memberName}
+                                                </button>
                                                 <span className="text-slate-400 font-normal text-sm ml-2">
                                                     ({event.playerName})
                                                 </span>
