@@ -59,6 +59,7 @@ export default function App() {
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'events'>('dashboard');
   const [hasHydrated, setHasHydrated] = useState<boolean>(false);
+  const [membersFilterPlayerId, setMembersFilterPlayerId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     (async () => {
@@ -96,6 +97,16 @@ export default function App() {
 
   const handleShowAllMembers = (playerId: string) => {
     setActiveTab('members');
+    setMembersFilterPlayerId(playerId);
+  };
+
+  const handleFilterByPlayer = (playerId: string) => {
+    setActiveTab('members');
+    setMembersFilterPlayerId(playerId);
+  };
+
+  const handleClearMembersFilter = () => {
+    setMembersFilterPlayerId(undefined);
   };
 
   const addPlayer = (name: string) => {
@@ -399,6 +410,9 @@ export default function App() {
                     players={players}
                     loggedEvents={loggedEvents}
                     onMemberClick={handleMemberClick}
+                    filterPlayerId={membersFilterPlayerId}
+                    onClearFilter={handleClearMembersFilter}
+                    onFilterByPlayer={handleFilterByPlayer}
                   />
                 </div>
                 <div>
