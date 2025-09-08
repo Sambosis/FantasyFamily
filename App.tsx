@@ -11,9 +11,13 @@ import {
   loadPlayers,
   loadLoggedEvents,
   loadLifeEvents,
-  savePlayers,
-  saveLoggedEvents,
-  saveLifeEvents,
+  createPlayer,
+  updatePlayer,
+  deletePlayer,
+  createFamilyMember,
+  updateFamilyMemberPlayer,
+  createLoggedEvent,
+  createLifeEvent,
 } from './storage';
 
 // Initial state for demonstration purposes
@@ -58,24 +62,58 @@ const INITIAL_EVENTS: LoggedEvent[] = [
 ]
 
 export default function App() {
-  const [players, setPlayers] = useState<Player[]>(() => loadPlayers() ?? INITIAL_PLAYERS);
-  const [loggedEvents, setLoggedEvents] = useState<LoggedEvent[]>(() => loadLoggedEvents() ?? INITIAL_EVENTS);
-  const [lifeEvents, setLifeEvents] = useState<EventDefinition[]>(() => loadLifeEvents() ?? LIFE_EVENTS);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loggedEvents, setLoggedEvents] = useState<LoggedEvent[]>([]);
+  const [lifeEvents, setLifeEvents] = useState<EventDefinition[]>([]);
   const [isCommissionerView, setIsCommissionerView] = useState<boolean>(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'members'>('dashboard');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Load initial data from API
   useEffect(() => {
-    savePlayers(players);
-  }, [players]);
+    const loadInitialData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-  useEffect(() => {
-    saveLoggedEvents(loggedEvents);
-  }, [loggedEvents]);
+        const [playersData, eventsData, lifeEventsData] = await Promise.all([
+          loadPlayers(),
+          loadLoggedEvents(),
+          loadLifeEvents(),
+        ]);
 
-  useEffect(() => {
-    saveLifeEvents(lifeEvents);
-  }, [lifeEvents]);
+        setPlayers(playersData.length > 0 ? playersData : INITIAL_PLAYERS);
+        setLoggedEvents(eventsData.length > 0 ? eventsData : INITIAL_EVENTS);
+        setLifeEvents(lifeEventsData.length > 0 ? lifeEventsData : LIFE_EVENTS);
+
+        // If we're using initial data, populate the database
+        if (playersData.length === 0) {
+          for (const player of INITIAL_PLAYERS) {
+            await createPlayer(player);
+          }
+        }
+        
+        if (lifeEventsData.length === 0) {
+          for (const event of LIFE_EVENTS) {
+            await createLifeEvent(event);
+          }
+        }
+      } catch (err) {
+        console.error('Error loading initial data:', err);
+        setError('Failed to load data. Please refresh the page.');
+        // Fall back to initial data if API fails
+        setPlayers(INITIAL_PLAYERS);
+        setLoggedEvents(INITIAL_EVENTS);
+        setLifeEvents(LIFE_EVENTS);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadInitialData();
+  }, []);
 
   const familyMembers = useMemo(() => {
     return players.flatMap(p => p.members.map(m => ({ ...m, playerName: p.name, playerId: p.id })));
@@ -98,7 +136,7 @@ export default function App() {
     setActiveTab('members');
   };
 
-  const addPlayer = (name: string) => {
+  const addPlayer = async (name: string) => {
     if (name.trim() === '') return;
     const newPlayer: Player = {
       id: crypto.randomUUID(),
@@ -106,10 +144,17 @@ export default function App() {
       score: 0,
       members: [],
     };
-    setPlayers(currentPlayers => [...currentPlayers, newPlayer]);
+    
+    try {
+      await createPlayer(newPlayer);
+      setPlayers(currentPlayers => [...currentPlayers, newPlayer]);
+    } catch (error) {
+      console.error('Error adding player:', error);
+      setError('Failed to add player. Please try again.');
+    }
   };
 
-  const renamePlayer = (playerId: string, newName: string) => {
+  const renamePlayer = async (playerId: string, newName: string) => {
     const trimmedNewName = newName.trim();
     if (trimmedNewName === '' || !playerId) return;
 
@@ -118,52 +163,79 @@ export default function App() {
     
     const oldName = playerToRename.name;
 
-    setPlayers(currentPlayers =>
-      currentPlayers.map(p =>
-        p.id === playerId ? { ...p, name: trimmedNewName } : p
-      )
-    );
+    try {
+      await updatePlayer(playerId, { name: trimmedNewName });
+      
+      setPlayers(currentPlayers =>
+        currentPlayers.map(p =>
+          p.id === playerId ? { ...p, name: trimmedNewName } : p
+        )
+      );
 
-    setLoggedEvents(currentEvents =>
-      currentEvents.map(e =>
-        e.playerName === oldName ? { ...e, playerName: trimmedNewName } : e
-      )
-    );
+      setLoggedEvents(currentEvents =>
+        currentEvents.map(e =>
+          e.playerName === oldName ? { ...e, playerName: trimmedNewName } : e
+        )
+      );
+    } catch (error) {
+      console.error('Error renaming player:', error);
+      setError('Failed to rename player. Please try again.');
+    }
   };
 
-  const deletePlayer = (playerId: string) => {
+  const deletePlayerHandler = async (playerId: string) => {
     const playerToDelete = players.find(p => p.id === playerId);
     if (!playerToDelete) return;
 
-    // Remove the player from the players array
-    setPlayers(currentPlayers => 
-      currentPlayers.filter(p => p.id !== playerId)
-    );
+    try {
+      await deletePlayer(playerId);
+      
+      // Remove the player from the players array
+      setPlayers(currentPlayers => 
+        currentPlayers.filter(p => p.id !== playerId)
+      );
 
-    // Remove all logged events associated with this player
-    setLoggedEvents(currentEvents =>
-      currentEvents.filter(e => e.playerName !== playerToDelete.name)
-    );
+      // Remove all logged events associated with this player
+      setLoggedEvents(currentEvents =>
+        currentEvents.filter(e => e.playerName !== playerToDelete.name)
+      );
+    } catch (error) {
+      console.error('Error deleting player:', error);
+      setError('Failed to delete player. Please try again.');
+    }
   };
 
 
-  const addMember = (playerId: string, memberName: string) => {
+  const addMember = async (playerId: string, memberName: string) => {
     if (memberName.trim() === '' || !playerId) return;
-    setPlayers(currentPlayers =>
-      currentPlayers.map(p => {
-        if (p.id === playerId) {
-          const newMember: FamilyMember = {
-            id: crypto.randomUUID(),
-            name: memberName,
-          };
-          return { ...p, members: [...p.members, newMember] };
-        }
-        return p;
-      })
-    );
+    
+    const newMember: FamilyMember = {
+      id: crypto.randomUUID(),
+      name: memberName,
+    };
+
+    try {
+      await createFamilyMember({
+        id: newMember.id,
+        name: newMember.name,
+        player_id: playerId,
+      });
+
+      setPlayers(currentPlayers =>
+        currentPlayers.map(p => {
+          if (p.id === playerId) {
+            return { ...p, members: [...p.members, newMember] };
+          }
+          return p;
+        })
+      );
+    } catch (error) {
+      console.error('Error adding member:', error);
+      setError('Failed to add family member. Please try again.');
+    }
   };
 
-  const addEvent = (name: string, points: number, category: EventCategory) => {
+  const addEvent = async (name: string, points: number, category: EventCategory) => {
     if (name.trim() === '' || isNaN(points)) return;
     const newEvent: EventDefinition = {
       id: crypto.randomUUID(),
@@ -171,10 +243,17 @@ export default function App() {
       points,
       category,
     };
-    setLifeEvents(currentEvents => [...currentEvents, newEvent]);
+
+    try {
+      await createLifeEvent(newEvent);
+      setLifeEvents(currentEvents => [...currentEvents, newEvent]);
+    } catch (error) {
+      console.error('Error adding event:', error);
+      setError('Failed to add event. Please try again.');
+    }
   };
 
-  const tradeMember = (memberId: string, toPlayerId: string) => {
+  const tradeMember = async (memberId: string, toPlayerId: string) => {
     if (!memberId || !toPlayerId) return;
 
     let fromPlayer: Player | undefined;
@@ -194,29 +273,38 @@ export default function App() {
     const toPlayer = players.find(p => p.id === toPlayerId);
     if (!toPlayer) return;
 
-    setPlayers(currentPlayers => currentPlayers.map(p => {
-      if (p.id === fromPlayer!.id) {
-        return { ...p, members: p.members.filter(m => m.id !== memberId) };
-      }
-      if (p.id === toPlayerId) {
-        return { ...p, members: [...p.members, memberToTrade!] };
-      }
-      return p;
-    }));
+    try {
+      await updateFamilyMemberPlayer(memberId, toPlayerId);
 
-    const tradeLog: LoggedEvent = {
-      id: crypto.randomUUID(),
-      memberName: memberToTrade.name,
-      playerName: `${fromPlayer.name} → ${toPlayer.name}`,
-      eventName: 'Member Traded',
-      points: 0,
-      timestamp: new Date(),
-      category: 'neutral',
-    };
-    setLoggedEvents(currentEvents => [tradeLog, ...currentEvents]);
+      setPlayers(currentPlayers => currentPlayers.map(p => {
+        if (p.id === fromPlayer!.id) {
+          return { ...p, members: p.members.filter(m => m.id !== memberId) };
+        }
+        if (p.id === toPlayerId) {
+          return { ...p, members: [...p.members, memberToTrade!] };
+        }
+        return p;
+      }));
+
+      const tradeLog: LoggedEvent = {
+        id: crypto.randomUUID(),
+        memberName: memberToTrade.name,
+        playerName: `${fromPlayer.name} → ${toPlayer.name}`,
+        eventName: 'Member Traded',
+        points: 0,
+        timestamp: new Date(),
+        category: 'neutral',
+      };
+      
+      await createLoggedEvent(tradeLog);
+      setLoggedEvents(currentEvents => [tradeLog, ...currentEvents]);
+    } catch (error) {
+      console.error('Error trading member:', error);
+      setError('Failed to trade member. Please try again.');
+    }
   };
 
-  const logEvent = (memberId: string, eventId: string) => {
+  const logEvent = async (memberId: string, eventId: string) => {
     const eventDefinition = lifeEvents.find(e => e.id === eventId);
     if (!eventDefinition) return;
 
@@ -234,26 +322,35 @@ export default function App() {
 
     if (!playerForEvent || !memberForEvent) return;
 
-    const finalPlayerForEvent = playerForEvent;
-    setPlayers(currentPlayers =>
-      currentPlayers.map(p => {
-        if (p.id === finalPlayerForEvent.id) {
-          return { ...p, score: p.score + eventDefinition.points };
-        }
-        return p;
-      })
-    );
+    try {
+      const newScore = playerForEvent.score + eventDefinition.points;
+      await updatePlayer(playerForEvent.id, { score: newScore });
 
-    const newLog: LoggedEvent = {
-      id: crypto.randomUUID(),
-      memberName: memberForEvent.name,
-      playerName: playerForEvent.name,
-      eventName: eventDefinition.name,
-      points: eventDefinition.points,
-      timestamp: new Date(),
-      category: eventDefinition.category,
-    };
-    setLoggedEvents(currentEvents => [newLog, ...currentEvents]);
+      setPlayers(currentPlayers =>
+        currentPlayers.map(p => {
+          if (p.id === playerForEvent!.id) {
+            return { ...p, score: newScore };
+          }
+          return p;
+        })
+      );
+
+      const newLog: LoggedEvent = {
+        id: crypto.randomUUID(),
+        memberName: memberForEvent.name,
+        playerName: playerForEvent.name,
+        eventName: eventDefinition.name,
+        points: eventDefinition.points,
+        timestamp: new Date(),
+        category: eventDefinition.category,
+      };
+      
+      await createLoggedEvent(newLog);
+      setLoggedEvents(currentEvents => [newLog, ...currentEvents]);
+    } catch (error) {
+      console.error('Error logging event:', error);
+      setError('Failed to log event. Please try again.');
+    }
   };
   
   const sortedPlayers = useMemo(() => {
@@ -261,9 +358,38 @@ export default function App() {
   }, [players]);
 
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-gray-200 font-sans flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold">Loading Fantasy Family...</h2>
+          <p className="text-slate-400 mt-2">Setting up your family league</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-900 text-gray-200 font-sans p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
+        {error && (
+          <div className="mb-4 p-4 bg-red-900/50 border border-red-500 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <span className="text-red-400 mr-2">⚠️</span>
+                <span className="text-red-200">{error}</span>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="text-red-400 hover:text-red-300"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+        
         <Header
           isCommissionerView={isCommissionerView}
           onToggleView={() => setIsCommissionerView((v) => !v)}
@@ -279,7 +405,7 @@ export default function App() {
               onLogEvent={logEvent}
               onTradeMember={tradeMember}
               onRenamePlayer={renamePlayer}
-              onDeletePlayer={deletePlayer}
+              onDeletePlayer={deletePlayerHandler}
               onAddEvent={addEvent}
             />
           </main>
