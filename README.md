@@ -1,72 +1,128 @@
-# Fantasy Family
+# Fantasy Family League
 
-A React application for managing fantasy family leagues.
+A fun family competition app where you track real-life events of family members and score points based on their achievements, mishaps, and milestones.
 
-## Local Development
+## Features
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
+- **Persistent Data**: All data is stored in a PostgreSQL database, so your family league persists across devices and sessions
+- **Real-time Updates**: Changes are immediately saved to the database and visible to all users
+- **Commissioner Controls**: Add/remove players, family members, and custom events
+- **Event Tracking**: Log life events for family members and automatically update scores
+- **Member Trading**: Trade family members between players
+- **Leaderboard**: Track who's winning the family competition
+- **Responsive Design**: Works on desktop and mobile devices
 
-2. Start the development server:
-   ```bash
-   npm run dev
-   ```
+## Database Migration
 
-3. Open your browser and navigate to `http://localhost:3000`
+The app now uses PostgreSQL for persistent storage instead of localStorage. This means:
+- ✅ Data persists across different computers/browsers
+- ✅ Multiple people can access the same league simultaneously  
+- ✅ No data loss when clearing browser cache
+- ✅ Proper backup and recovery options
 
-## Deployment to Heroku
-
-This application is configured to deploy to Heroku automatically.
+## Heroku Deployment
 
 ### Prerequisites
-- Heroku CLI installed
-- Git repository initialized
+1. Heroku CLI installed
+2. Git repository initialized
+3. Heroku app created
+
+### Database Setup
+Your Heroku app needs a PostgreSQL database:
+
+```bash
+# Add Heroku Postgres addon (this may require payment verification)
+heroku addons:create heroku-postgresql:mini -a your-app-name
+
+# Check database URL is set
+heroku config -a your-app-name
+```
 
 ### Deployment Steps
-
-1. Create a new Heroku app:
-   ```bash
-   heroku create your-app-name
-   ```
-
-2. Set environment variables (if needed):
-   ```bash
-   heroku config:set GEMINI_API_KEY=your_api_key_here
-   ```
-
-3. Deploy to Heroku:
+1. **Push to Heroku**:
    ```bash
    git add .
-   git commit -m "Initial commit"
+   git commit -m "Add persistent database storage"
    git push heroku main
    ```
 
-4. Open your app:
+2. **Run Database Migration**:
    ```bash
-   heroku open
+   heroku run npm run migrate -a your-app-name
+   ```
+
+3. **Verify Deployment**:
+   ```bash
+   heroku open -a your-app-name
    ```
 
 ### Environment Variables
+The app automatically uses `DATABASE_URL` provided by Heroku Postgres. No additional configuration needed.
 
-The following environment variables can be set in Heroku:
+## Local Development
 
-- `GEMINI_API_KEY`: API key for Gemini services
+### Setup
+```bash
+npm install
+```
 
-### Build Process
+### Database Setup (Local)
+For local development, you'll need PostgreSQL installed:
 
-The application uses the following build process on Heroku:
+```bash
+# Set database URL for local development
+export DATABASE_URL="postgresql://username:password@localhost:5432/fantasy_family"
 
-1. `heroku-postbuild` script runs `npm run build` to create the production build
-2. The `start` script serves the built application using Express
-3. Static files are served from the `dist` directory
-4. All routes are handled by the React application for client-side routing
+# Run migration
+npm run migrate
+
+# Start development server
+npm run dev
+```
+
+### Production Build
+```bash
+npm run build
+npm start
+```
+
+## API Endpoints
+
+The app now includes a REST API:
+
+- `GET /api/players` - Get all players with their family members
+- `POST /api/players` - Create a new player
+- `PUT /api/players/:id` - Update a player
+- `DELETE /api/players/:id` - Delete a player
+- `POST /api/family-members` - Add a family member
+- `PUT /api/family-members/:id/player` - Trade a family member
+- `GET /api/event-definitions` - Get all life events
+- `POST /api/event-definitions` - Create a custom life event  
+- `GET /api/logged-events` - Get all logged events
+- `POST /api/logged-events` - Log a new event
+
+## Troubleshooting
+
+### Database Connection Issues
+- Ensure `DATABASE_URL` environment variable is set
+- Check Heroku Postgres addon is properly provisioned
+- Verify database credentials are correct
+
+### Migration Issues
+- Run `heroku run npm run migrate -a your-app-name` to reset database
+- Check Heroku logs: `heroku logs --tail -a your-app-name`
+
+### Data Not Persisting
+- Verify you're no longer using localStorage (check browser dev tools)
+- Confirm API endpoints are being called (check Network tab)
+- Check server logs for database connection errors
 
 ## Project Structure
 
-- `src/` - Source files (React components, etc.)
+- `src/` - React components and TypeScript files
 - `dist/` - Production build output (created during build)
-- `server.js` - Express server for serving the built application
+- `server.js` - Express server with API endpoints
+- `db.js` - Database connection and query functions
+- `migrate.js` - Database migration script
 - `vite.config.ts` - Vite configuration
 - `Procfile` - Heroku process configuration
