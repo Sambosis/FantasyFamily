@@ -24,42 +24,65 @@ interface EventFeedProps {
 export const EventFeed: React.FC<EventFeedProps> = ({ events }) => {
 
     const categoryStyles: { [key: string]: string } = {
-        positive: 'border-green-500',
-        negative: 'border-red-500',
-        neutral: 'border-slate-500'
+        positive: 'border-green-500 bg-green-500/10',
+        negative: 'border-red-500 bg-red-500/10',
+        neutral: 'border-slate-500 bg-slate-500/10'
     };
 
     return (
-        <div className="bg-slate-800/50 p-6 rounded-xl shadow-lg animate-fade-in">
-            <h2 className="text-3xl font-bold text-purple-400 mb-6">Recent Events</h2>
+        <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in">
+            {/* Header */}
+            <div className="flex items-center space-x-3 mb-8">
+                <span className="text-3xl">📊</span>
+                <div>
+                    <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
+                        Recent Events
+                    </h2>
+                    <p className="text-slate-400 text-sm">Latest family drama and achievements</p>
+                </div>
+            </div>
+
             {events.length > 0 ? (
-                 <ul className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                 <ul className="space-y-4 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent">
                     {events.map(event => {
                         const pointColor = event.points > 0 ? 'text-green-400' : event.points < 0 ? 'text-red-400' : 'text-slate-400';
                         const pointSign = event.points > 0 ? '+' : '';
-                        const borderClass = categoryStyles[event.category] || 'border-slate-500';
+                        const borderClass = categoryStyles[event.category] || 'border-slate-500 bg-slate-500/10';
 
                         return (
-                            <li key={event.id} className={`flex justify-between items-center bg-slate-800 p-3 rounded-lg animate-slide-in-up border-l-4 ${borderClass}`}>
-                                <div>
-                                    <p className="font-semibold text-white">
-                                        {event.memberName}
-                                        <span className="text-slate-400 font-normal"> ({event.playerName})</span>
+                            <li key={event.id} className={`flex justify-between items-center bg-slate-800/50 p-4 rounded-xl animate-slide-in-up border-l-4 ${borderClass} hover:bg-slate-700/50 transition-all duration-300 transform hover:scale-[1.02]`}>
+                                <div className="flex-1">
+                                    <div className="flex items-center space-x-2 mb-1">
+                                        <p className="font-semibold text-white">
+                                            {event.memberName}
+                                        </p>
+                                        <span className="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded-full">
+                                            {event.playerName}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-slate-300 font-medium">{event.eventName}</p>
+                                    <p className="text-xs text-slate-500 mt-1 flex items-center">
+                                        <span className="mr-1">⏱️</span>
+                                        {timeSince(event.timestamp)}
                                     </p>
-                                    <p className="text-sm text-slate-300">{event.eventName}</p>
-                                    <p className="text-xs text-slate-500 mt-1">{timeSince(event.timestamp)}</p>
                                 </div>
-                                <div className={`text-lg font-bold ${pointColor}`}>
-                                    {pointSign}{event.points}
+                                <div className="flex flex-col items-end">
+                                    <div className={`text-2xl font-bold ${pointColor}`}>
+                                        {pointSign}{event.points}
+                                    </div>
+                                    <div className="text-xs text-slate-500">points</div>
                                 </div>
                             </li>
                         )
                     })}
                 </ul>
             ) : (
-                <div className="text-center py-8 text-slate-500">
-                    <p className="text-lg">No events logged yet.</p>
-                     <p className="text-sm">Log a life event to see it appear here.</p>
+                <div className="text-center py-12 text-slate-500">
+                    <div className="bg-slate-800/50 p-8 rounded-xl border border-slate-700">
+                        <span className="text-6xl opacity-30 block mb-4">📊</span>
+                        <p className="text-xl font-semibold mb-2">No events logged yet</p>
+                        <p className="text-sm text-slate-400">Log a life event using the Commissioner's Desk to see the drama unfold here!</p>
+                    </div>
                 </div>
             )}
         </div>
