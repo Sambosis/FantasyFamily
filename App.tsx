@@ -142,6 +142,41 @@ export default function App() {
     );
   };
 
+  const tradeMember = (fromPlayerId: string, toPlayerId: string, memberId: string) => {
+    if (!fromPlayerId || !toPlayerId || !memberId || fromPlayerId === toPlayerId) return;
+    
+    // Find the member to trade
+    const fromPlayer = players.find(p => p.id === fromPlayerId);
+    const memberToTrade = fromPlayer?.members.find(m => m.id === memberId);
+    
+    if (!fromPlayer || !memberToTrade) return;
+
+    setPlayers(currentPlayers =>
+      currentPlayers.map(p => {
+        if (p.id === fromPlayerId) {
+          // Remove member from the source player
+          return { ...p, members: p.members.filter(m => m.id !== memberId) };
+        } else if (p.id === toPlayerId) {
+          // Add member to the target player
+          return { ...p, members: [...p.members, memberToTrade] };
+        }
+        return p;
+      })
+    );
+
+    // Update logged events to reflect the new player ownership
+    const toPlayer = players.find(p => p.id === toPlayerId);
+    if (toPlayer) {
+      setLoggedEvents(currentEvents =>
+        currentEvents.map(e =>
+          e.memberName === memberToTrade.name && e.playerName === fromPlayer.name
+            ? { ...e, playerName: toPlayer.name }
+            : e
+        )
+      );
+    }
+  };
+
   const addEvent = (name: string, points: number, category: EventCategory) => {
     if (name.trim() === '' || isNaN(points)) return;
     const newEvent: EventDefinition = {
@@ -217,6 +252,7 @@ export default function App() {
               onRenamePlayer={renamePlayer}
               onDeletePlayer={deletePlayer}
               onAddEvent={addEvent}
+              onTradeMember={tradeMember}
             />
           </main>
         ) : (
