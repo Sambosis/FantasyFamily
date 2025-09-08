@@ -153,6 +153,48 @@ export default function App() {
     setLifeEvents(currentEvents => [...currentEvents, newEvent]);
   };
 
+  const tradeMember = (memberId: string, toPlayerId: string) => {
+    if (!memberId || !toPlayerId) return;
+
+    let fromPlayer: Player | undefined;
+    let memberToTrade: FamilyMember | undefined;
+    for (const player of players) {
+      const member = player.members.find(m => m.id === memberId);
+      if (member) {
+        fromPlayer = player;
+        memberToTrade = member;
+        break;
+      }
+    }
+
+    if (!fromPlayer || !memberToTrade) return;
+    if (fromPlayer.id === toPlayerId) return;
+
+    const toPlayer = players.find(p => p.id === toPlayerId);
+    if (!toPlayer) return;
+
+    setPlayers(currentPlayers => currentPlayers.map(p => {
+      if (p.id === fromPlayer!.id) {
+        return { ...p, members: p.members.filter(m => m.id !== memberId) };
+      }
+      if (p.id === toPlayerId) {
+        return { ...p, members: [...p.members, memberToTrade!] };
+      }
+      return p;
+    }));
+
+    const tradeLog: LoggedEvent = {
+      id: crypto.randomUUID(),
+      memberName: memberToTrade.name,
+      playerName: `${fromPlayer.name} → ${toPlayer.name}`,
+      eventName: 'Member Traded',
+      points: 0,
+      timestamp: new Date(),
+      category: 'neutral',
+    };
+    setLoggedEvents(currentEvents => [tradeLog, ...currentEvents]);
+  };
+
   const logEvent = (memberId: string, eventId: string) => {
     const eventDefinition = lifeEvents.find(e => e.id === eventId);
     if (!eventDefinition) return;
@@ -214,6 +256,7 @@ export default function App() {
               onAddPlayer={addPlayer}
               onAddMember={addMember}
               onLogEvent={logEvent}
+              onTradeMember={tradeMember}
               onRenamePlayer={renamePlayer}
               onDeletePlayer={deletePlayer}
               onAddEvent={addEvent}
