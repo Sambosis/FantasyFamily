@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Player, LoggedEvent, FamilyMember } from '../types';
 
 interface FamilyMemberWithPlayer extends FamilyMember {
@@ -20,10 +20,16 @@ export const FamilyMembersView: React.FC<FamilyMembersViewProps> = ({
   loggedEvents, 
   onMemberClick 
 }) => {
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const familyMembersWithStats = useMemo(() => {
     const members: FamilyMemberWithPlayer[] = [];
     
-    players.forEach(player => {
+    // Filter players based on selection
+    const playersToProcess = selectedPlayerId 
+      ? players.filter(p => p.id === selectedPlayerId)
+      : players;
+    
+    playersToProcess.forEach(player => {
       player.members.forEach(member => {
         const memberEvents = loggedEvents.filter(event => event.memberName === member.name);
         const totalPoints = memberEvents.reduce((sum, event) => sum + event.points, 0);
@@ -43,7 +49,7 @@ export const FamilyMembersView: React.FC<FamilyMembersViewProps> = ({
     });
     
     return members.sort((a, b) => b.totalPoints - a.totalPoints);
-  }, [players, loggedEvents]);
+  }, [players, loggedEvents, selectedPlayerId]);
 
   const timeSince = (date: Date): string => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -66,8 +72,49 @@ export const FamilyMembersView: React.FC<FamilyMembersViewProps> = ({
       <div className="flex items-center space-x-3 mb-6">
         <span className="text-3xl">👨‍👩‍👧‍👦</span>
         <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
-          All Family Members
+          {selectedPlayerId 
+            ? `${players.find(p => p.id === selectedPlayerId)?.name}'s Family Members`
+            : 'All Family Members'}
         </h2>
+      </div>
+
+      {/* Player Filter Buttons */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <button
+          onClick={() => setSelectedPlayerId(null)}
+          className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            selectedPlayerId === null
+              ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+              : 'bg-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-600/50 border border-slate-600/50'
+          }`}
+        >
+          <span className="flex items-center gap-2">
+            <span>👥</span>
+            All Players
+          </span>
+        </button>
+        {players.map(player => {
+          const memberCount = player.members.length;
+          return (
+            <button
+              key={player.id}
+              onClick={() => setSelectedPlayerId(player.id)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                selectedPlayerId === player.id
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                  : 'bg-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-600/50 border border-slate-600/50'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <span>👤</span>
+                {player.name}
+                <span className="text-xs bg-slate-800/50 px-2 py-0.5 rounded-full">
+                  {memberCount}
+                </span>
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {familyMembersWithStats.length > 0 ? (
@@ -130,8 +177,16 @@ export const FamilyMembersView: React.FC<FamilyMembersViewProps> = ({
       ) : (
         <div className="text-center py-12 bg-slate-800/50 rounded-xl border border-slate-700">
           <div className="text-6xl mb-4 opacity-50">👥</div>
-          <p className="text-lg text-slate-400 font-medium">No family members found</p>
-          <p className="text-sm text-slate-500 mt-2">Add players and draft family members to see them here!</p>
+          <p className="text-lg text-slate-400 font-medium">
+            {selectedPlayerId 
+              ? `No family members found for ${players.find(p => p.id === selectedPlayerId)?.name}`
+              : 'No family members found'}
+          </p>
+          <p className="text-sm text-slate-500 mt-2">
+            {selectedPlayerId 
+              ? 'Draft some family members to this player to see them here!'
+              : 'Add players and draft family members to see them here!'}
+          </p>
         </div>
       )}
     </div>
