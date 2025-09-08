@@ -6,6 +6,7 @@ import { LogEventForm } from './LogEventForm';
 import { RenamePlayerForm } from './RenamePlayerForm';
 import { DeletePlayerForm } from './DeletePlayerForm';
 import { AddEventForm } from './AddEventForm';
+import { TradeMemberForm } from './TradeMemberForm';
 
 interface CommissionerDeskProps {
   players: Player[];
@@ -13,6 +14,7 @@ interface CommissionerDeskProps {
   onAddPlayer: (name: string) => void;
   onAddMember: (playerId: string, memberName: string) => void;
   onLogEvent: (memberId: string, eventId: string) => void;
+  onTradeMember: (memberId: string, toPlayerId: string) => void;
   onRenamePlayer: (playerId: string, newName: string) => void;
   onDeletePlayer: (playerId: string) => void;
   onAddEvent: (name: string, points: number, category: EventCategory) => void;
@@ -24,6 +26,7 @@ export const CommissionerDesk: React.FC<CommissionerDeskProps> = ({
   onAddPlayer,
   onAddMember,
   onLogEvent,
+  onTradeMember,
   onRenamePlayer,
   onDeletePlayer,
   onAddEvent,
@@ -35,6 +38,7 @@ export const CommissionerDesk: React.FC<CommissionerDeskProps> = ({
         <div className="space-y-6">
           <AddPlayerForm onAddPlayer={onAddPlayer} />
           <AddMemberForm players={players} onAddMember={onAddMember} />
+          <TradeMemberForm players={players} onTradeMember={onTradeMember} />
           <LogEventForm players={players} lifeEvents={lifeEvents} onLogEvent={onLogEvent} />
           <RenamePlayerForm players={players} onRenamePlayer={onRenamePlayer} />
           <DeletePlayerForm players={players} onDeletePlayer={onDeletePlayer} />
