@@ -7,6 +7,7 @@ import { EventFeed } from './components/EventFeed';
 import { CommissionerDesk } from './components/CommissionerDesk';
 import { FamilyMemberStats } from './components/FamilyMemberStats';
 import { FamilyMembersView } from './components/FamilyMembersView';
+import { LifeEventsView } from './components/LifeEventsView';
 import { loadState, saveState } from './storage';
 
 // Initial state for demonstration purposes
@@ -56,7 +57,7 @@ export default function App() {
   const [lifeEvents, setLifeEvents] = useState<EventDefinition[]>(LIFE_EVENTS);
   const [isCommissionerView, setIsCommissionerView] = useState<boolean>(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'members'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'events'>('dashboard');
   const [hasHydrated, setHasHydrated] = useState<boolean>(false);
 
   useEffect(() => {
@@ -321,6 +322,19 @@ export default function App() {
                     Family Members
                   </span>
                 </button>
+                <button
+                  onClick={() => setActiveTab('events')}
+                  className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+                    activeTab === 'events'
+                      ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <span>📊</span>
+                    Life Events
+                  </span>
+                </button>
               </div>
             </div>
 
@@ -391,6 +405,10 @@ export default function App() {
                   <EventFeed events={loggedEvents} />
                 </div>
               </div>
+            )}
+
+            {activeTab === 'events' && (
+              <LifeEventsView lifeEvents={lifeEvents} />
             )}
           </main>
         )}
