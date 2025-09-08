@@ -22,47 +22,56 @@ export const AddEventForm: React.FC<AddEventFormProps> = ({ onAddEvent }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <label htmlFor="eventName" className="block text-sm font-medium text-slate-300">
-        5. Add New Life Event
-      </label>
-      <div className="space-y-2">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="flex items-center justify-center w-6 h-6 bg-yellow-500/20 text-yellow-400 text-sm font-bold rounded-full">4</span>
+        <label htmlFor="eventName" className="text-sm font-medium text-slate-300">
+          Add New Life Event
+        </label>
+      </div>
+      <div className="space-y-3">
         <input
           id="eventName"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Event Name (e.g., Won the lottery)"
-          className="w-full bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition"
+          className="w-full bg-slate-700/80 border border-slate-600 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none transition-all duration-200 placeholder-slate-400"
           required
         />
-        <div className="flex gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input
                 id="eventPoints"
                 type="number"
                 value={points}
                 onChange={(e) => setPoints(e.target.value)}
-                placeholder="Points"
-                className="w-1/2 bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition"
+                placeholder="Points (e.g., 100)"
+                className="bg-slate-700/80 border border-slate-600 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none transition-all duration-200 placeholder-slate-400"
                 required
             />
-            <select
-                id="eventCategory"
-                value={category}
-                onChange={(e) => setCategory(e.target.value as EventCategory)}
-                className="w-1/2 bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition"
-            >
-                <option value="positive">Positive</option>
-                <option value="negative">Negative</option>
-                <option value="neutral">Neutral</option>
-            </select>
+            <div className="relative">
+                <select
+                    id="eventCategory"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value as EventCategory)}
+                    className="w-full bg-slate-700/80 border border-slate-600 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none transition-all duration-200 appearance-none cursor-pointer"
+                >
+                    <option value="positive">✅ Positive</option>
+                    <option value="negative">❌ Negative</option>
+                    <option value="neutral">⚪ Neutral</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                    <span className="text-slate-400">▼</span>
+                </div>
+            </div>
         </div>
       </div>
       <button
         type="submit"
-        className="w-full bg-yellow-600 text-white font-bold py-2 px-4 rounded-md hover:bg-yellow-700 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
+        className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 disabled:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg hover:shadow-yellow-500/25"
         disabled={!name.trim() || !points.trim()}
       >
+        <span>⚙️</span>
         Add Custom Event
       </button>
     </form>
