@@ -42,7 +42,12 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, rank, onMemberCl
                             <p className={`text-xs font-medium ${rankDisplay.textColor}`}>
                                 {rank === 1 ? 'Champion' : rank === 2 ? 'Runner-up' : rank === 3 ? 'Third Place' : `Rank #${rank}`}
                             </p>
-                            <h3 className="text-xl font-bold text-white">{player.name}</h3>
+                            <h3
+                                className="text-xl font-bold text-white hover:text-cyan-300 hover:underline decoration-cyan-500/30 cursor-pointer"
+                                onClick={() => onShowAllMembers?.(player.id)}
+                            >
+                                {player.name}
+                            </h3>
                             <div className="flex items-center gap-2 mt-1">
                                 <span className="text-xs text-slate-500">
                                     {player.members.length} {player.members.length === 1 ? 'member' : 'members'}

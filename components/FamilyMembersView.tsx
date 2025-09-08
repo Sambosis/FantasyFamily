@@ -13,12 +13,18 @@ interface FamilyMembersViewProps {
   players: Player[];
   loggedEvents: LoggedEvent[];
   onMemberClick: (memberId: string) => void;
+  filterPlayerId?: string;
+  onClearFilter?: () => void;
+  onFilterByPlayer?: (playerId: string) => void;
 }
 
 export const FamilyMembersView: React.FC<FamilyMembersViewProps> = ({ 
   players, 
   loggedEvents, 
-  onMemberClick 
+  onMemberClick,
+  filterPlayerId,
+  onClearFilter,
+  onFilterByPlayer,
 }) => {
   const familyMembersWithStats = useMemo(() => {
     const members: FamilyMemberWithPlayer[] = [];
@@ -45,6 +51,17 @@ export const FamilyMembersView: React.FC<FamilyMembersViewProps> = ({
     return members.sort((a, b) => b.totalPoints - a.totalPoints);
   }, [players, loggedEvents]);
 
+  const filteredMembersWithStats = useMemo(() => {
+    if (!filterPlayerId) return familyMembersWithStats;
+    return familyMembersWithStats.filter(m => m.playerId === filterPlayerId);
+  }, [familyMembersWithStats, filterPlayerId]);
+
+  const activePlayerName = useMemo(() => {
+    if (!filterPlayerId) return null;
+    const p = players.find(x => x.id === filterPlayerId);
+    return p ? p.name : null;
+  }, [players, filterPlayerId]);
+
   const timeSince = (date: Date): string => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
     if (seconds < 5) return "just now";
@@ -66,13 +83,21 @@ export const FamilyMembersView: React.FC<FamilyMembersViewProps> = ({
       <div className="flex items-center space-x-3 mb-6">
         <span className="text-3xl">👨‍👩‍👧‍👦</span>
         <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
-          All Family Members
+          {activePlayerName ? `${activePlayerName}'s Family Members` : 'All Family Members'}
         </h2>
+        {filterPlayerId && onClearFilter && (
+          <button
+            onClick={onClearFilter}
+            className="ml-auto px-3 py-1.5 text-sm rounded-lg bg-slate-800 text-slate-300 border border-slate-600 hover:bg-slate-700 hover:text-white transition-colors"
+          >
+            Clear filter
+          </button>
+        )}
       </div>
 
-      {familyMembersWithStats.length > 0 ? (
+      {filteredMembersWithStats.length > 0 ? (
         <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-          {familyMembersWithStats.map((member, index) => {
+          {filteredMembersWithStats.map((member, index) => {
             const pointColor = member.totalPoints > 0 ? 'text-green-400' : 
                               member.totalPoints < 0 ? 'text-red-400' : 'text-slate-400';
             const isTopPerformer = index < 3 && member.totalPoints > 0;
@@ -106,7 +131,17 @@ export const FamilyMembersView: React.FC<FamilyMembersViewProps> = ({
                         )}
                       </div>
                       <p className="text-sm text-slate-400 mb-2">
-                        Member of <span className="text-purple-300 font-medium">{member.playerName}</span>
+                        Member of{' '}
+                        {onFilterByPlayer ? (
+                          <button
+                            onClick={() => onFilterByPlayer(member.playerId)}
+                            className="text-purple-300 font-medium hover:text-purple-200 underline decoration-purple-500/30"
+                          >
+                            {member.playerName}
+                          </button>
+                        ) : (
+                          <span className="text-purple-300 font-medium">{member.playerName}</span>
+                        )}
                       </p>
                       <div className="flex items-center gap-4 text-xs text-slate-500">
                         <span>{member.eventCount} {member.eventCount === 1 ? 'event' : 'events'}</span>
