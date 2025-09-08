@@ -5,6 +5,8 @@ import { Header } from './components/Header';
 import { Leaderboard } from './components/Leaderboard';
 import { EventFeed } from './components/EventFeed';
 import { CommissionerDesk } from './components/CommissionerDesk';
+import { FamilyMemberStats } from './components/FamilyMemberStats';
+import { FamilyMembersView } from './components/FamilyMembersView';
 import {
   loadPlayers,
   loadLoggedEvents,
@@ -60,6 +62,8 @@ export default function App() {
   const [loggedEvents, setLoggedEvents] = useState<LoggedEvent[]>(() => loadLoggedEvents() ?? INITIAL_EVENTS);
   const [lifeEvents, setLifeEvents] = useState<EventDefinition[]>(() => loadLifeEvents() ?? LIFE_EVENTS);
   const [isCommissionerView, setIsCommissionerView] = useState<boolean>(false);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'members'>('dashboard');
 
   useEffect(() => {
     savePlayers(players);
@@ -76,6 +80,23 @@ export default function App() {
   const familyMembers = useMemo(() => {
     return players.flatMap(p => p.members.map(m => ({ ...m, playerName: p.name, playerId: p.id })));
   }, [players]);
+
+  const selectedMember = useMemo(() => {
+    if (!selectedMemberId) return null;
+    return familyMembers.find(m => m.id === selectedMemberId) || null;
+  }, [selectedMemberId, familyMembers]);
+
+  const handleMemberClick = (memberId: string) => {
+    setSelectedMemberId(memberId);
+  };
+
+  const handleCloseMemberStats = () => {
+    setSelectedMemberId(null);
+  };
+
+  const handleShowAllMembers = (playerId: string) => {
+    setActiveTab('members');
+  };
 
   const addPlayer = (name: string) => {
     if (name.trim() === '') return;
@@ -272,56 +293,118 @@ export default function App() {
               <p className="text-slate-400">Track your family's achievements and see who's winning</p>
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 p-4 rounded-xl border border-cyan-500/30 backdrop-blur-xs">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-cyan-300 text-sm font-medium">Leading Player</p>
-                    <p className="text-2xl font-bold text-white">
-                      {sortedPlayers[0]?.name || 'None'}
-                    </p>
-                  </div>
-                  <span className="text-3xl opacity-70">🏆</span>
-                </div>
-              </div>
-              <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 p-4 rounded-xl border border-purple-500/30 backdrop-blur-xs">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-purple-300 text-sm font-medium">Total Players</p>
-                    <p className="text-2xl font-bold text-white">{players.length}</p>
-                  </div>
-                  <span className="text-3xl opacity-70">👥</span>
-                </div>
-              </div>
-              <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-4 rounded-xl border border-green-500/30 backdrop-blur-xs">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-green-300 text-sm font-medium">Total Events</p>
-                    <p className="text-2xl font-bold text-white">{loggedEvents.length}</p>
-                  </div>
-                  <span className="text-3xl opacity-70">📊</span>
-                </div>
-              </div>
-              <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/20 p-4 rounded-xl border border-orange-500/30 backdrop-blur-xs">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-orange-300 text-sm font-medium">Family Members</p>
-                    <p className="text-2xl font-bold text-white">
-                      {players.reduce((acc, p) => acc + p.members.length, 0)}
-                    </p>
-                  </div>
-                  <span className="text-3xl opacity-70">👨‍👩‍👧‍👦</span>
-                </div>
+            {/* Tab Navigation */}
+            <div className="flex justify-center">
+              <div className="bg-slate-800/50 p-1 rounded-xl border border-slate-700">
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+                    activeTab === 'dashboard'
+                      ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <span>🏆</span>
+                    Dashboard
+                  </span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('members')}
+                  className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+                    activeTab === 'members'
+                      ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <span>👨‍👩‍👧‍👦</span>
+                    Family Members
+                  </span>
+                </button>
               </div>
             </div>
 
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <Leaderboard players={sortedPlayers} />
-              <EventFeed events={loggedEvents} />
-            </div>
+            {activeTab === 'dashboard' && (
+              <>
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 p-4 rounded-xl border border-cyan-500/30 backdrop-blur-xs">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-cyan-300 text-sm font-medium">Leading Player</p>
+                        <p className="text-2xl font-bold text-white">
+                          {sortedPlayers[0]?.name || 'None'}
+                        </p>
+                      </div>
+                      <span className="text-3xl opacity-70">🏆</span>
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 p-4 rounded-xl border border-purple-500/30 backdrop-blur-xs">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-purple-300 text-sm font-medium">Total Players</p>
+                        <p className="text-2xl font-bold text-white">{players.length}</p>
+                      </div>
+                      <span className="text-3xl opacity-70">👥</span>
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-4 rounded-xl border border-green-500/30 backdrop-blur-xs">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-green-300 text-sm font-medium">Total Events</p>
+                        <p className="text-2xl font-bold text-white">{loggedEvents.length}</p>
+                      </div>
+                      <span className="text-3xl opacity-70">📊</span>
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/20 p-4 rounded-xl border border-orange-500/30 backdrop-blur-xs">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-orange-300 text-sm font-medium">Family Members</p>
+                        <p className="text-2xl font-bold text-white">
+                          {players.reduce((acc, p) => acc + p.members.length, 0)}
+                        </p>
+                      </div>
+                      <span className="text-3xl opacity-70">👨‍👩‍👧‍👦</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Main Content Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <Leaderboard players={sortedPlayers} onMemberClick={handleMemberClick} onShowAllMembers={handleShowAllMembers} />
+                  <EventFeed events={loggedEvents} />
+                </div>
+              </>
+            )}
+
+            {activeTab === 'members' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2">
+                  <FamilyMembersView 
+                    players={players}
+                    loggedEvents={loggedEvents}
+                    onMemberClick={handleMemberClick}
+                  />
+                </div>
+                <div>
+                  <EventFeed events={loggedEvents} />
+                </div>
+              </div>
+            )}
           </main>
+        )}
+
+        {/* Family Member Stats Modal */}
+        {selectedMember && (
+          <FamilyMemberStats
+            member={selectedMember}
+            playerName={selectedMember.playerName}
+            playerId={selectedMember.playerId}
+            allEvents={loggedEvents}
+            onClose={handleCloseMemberStats}
+          />
         )}
       </div>
     </div>
