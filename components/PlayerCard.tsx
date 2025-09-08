@@ -4,6 +4,7 @@ import { Player } from '../types';
 interface PlayerCardProps {
   player: Player;
   rank: number;
+  onMemberClick?: (memberName: string, playerName?: string) => void;
 }
 
 const getRankDisplay = (rank: number) => {
@@ -15,7 +16,7 @@ const getRankDisplay = (rank: number) => {
     }
 };
 
-export const PlayerCard: React.FC<PlayerCardProps> = ({ player, rank }) => {
+export const PlayerCard: React.FC<PlayerCardProps> = ({ player, rank, onMemberClick }) => {
     const scoreColor = player.score > 0 ? 'text-green-400' : player.score < 0 ? 'text-red-400' : 'text-slate-400';
     const rankDisplay = getRankDisplay(rank);
     const isTopThree = rank <= 3;
@@ -60,13 +61,15 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, rank }) => {
                     <div className="mt-4 pt-4 border-t border-slate-700/50">
                         <div className="flex flex-wrap gap-2">
                             {player.members.slice(0, 3).map(member => (
-                                <span 
-                                    key={member.id} 
-                                    className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-700/50 text-slate-300 border border-slate-600/30"
+                                <button
+                                    key={member.id}
+                                    type="button"
+                                    onClick={() => onMemberClick && onMemberClick(member.name, player.name)}
+                                    className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-700/50 text-slate-300 border border-slate-600/30 hover:bg-slate-700/70 transition cursor-pointer"
                                 >
                                     <span className="mr-1">👤</span>
                                     {member.name}
-                                </span>
+                                </button>
                             ))}
                             {player.members.length > 3 && (
                                 <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-700/30 text-slate-400 border border-slate-600/20">
